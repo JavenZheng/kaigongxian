@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>开工先 · 反拖延AI工作台</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='2' y='2' width='13' height='13' rx='3' fill='%232F54EB'/%3E%3Crect x='17' y='2' width='13' height='13' rx='3' fill='%238AA0F5'/%3E%3Crect x='17' y='17' width='13' height='13' rx='3' fill='%232F54EB'/%3E%3Crect x='2' y='17' width='13' height='13' rx='3' fill='%23E1E7FB'/%3E%3C/svg%3E">
+<style>
+/* ===== 基础 ===== */
+:root{
+  --blue:#2F54EB; --blue-d:#2548C8; --blue-l:#EEF2FF;
+  --navy:#17223F; --ink:#262C3A; --mut:#68738C;
+  --bg:#F4F6FB; --card:#FFFFFF; --line:#E3E8F2;
+  --ok:#1E9D5F; --ok-l:#E6F6EE; --warn:#C2410C; --warn-l:#FDEBE2;
+  --r:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","HarmonyOS Sans SC","Source Han Sans SC","Microsoft YaHei",sans-serif;
+  background:var(--bg);color:var(--ink);font-size:15px;line-height:1.6;
+}
+a{color:var(--blue);text-decoration:none}
+button{font:inherit;cursor:pointer;border:0;background:none}
+input,textarea,select{font:inherit;color:var(--ink)}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ===== 顶栏 ===== */
+.topbar{
+  position:sticky;top:0;z-index:20;background:rgba(255,255,255,.92);
+  backdrop-filter:blur(8px);border-bottom:1px solid var(--line);
+}
+.topbar-in{max-width:1080px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:16px}
+.brand{display:flex;align-items:center;gap:9px;font-weight:700;font-size:18px;color:var(--navy);white-space:nowrap}
+.brand svg{width:26px;height:26px;flex:none}
+.brand small{display:none}
+.tabs{display:flex;gap:2px;margin-left:auto;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs a{
+  padding:8px 14px;border-radius:9px;color:var(--mut);font-weight:500;font-size:14px;white-space:nowrap;
+}
+.tabs a:hover{background:var(--blue-l);color:var(--blue)}
+.tabs a.on{background:var(--blue);color:#fff}
+
+/* ===== 布局 ===== */
+main{max-width:1080px;margin:0 auto;padding:22px 16px 60px}
+.view{display:none}
+.view.on{display:block}
+.foot{max-width:1080px;margin:0 auto;padding:18px 16px 40px;border-top:1px solid var(--line);color:var(--mut);font-size:12.5px;display:flex;gap:14px;flex-wrap:wrap}
+
+/* ===== 通用组件 ===== */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+.card+.card{margin-top:14px}
+.card h2{font-size:17px;color:var(--navy);margin-bottom:4px}
+.card .sub{color:var(--mut);font-size:13px;margin-bottom:14px}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  min-height:44px;padding:0 20px;border-radius:11px;font-weight:600;font-size:15px;
+  transition:background .15s,color .15s,border-color .15s,transform .1s;
+}
+.btn:active{transform:translateY(1px)}
+.btn-p{background:var(--blue);color:#fff}
+.btn-p:hover{background:var(--blue-d)}
+.btn-g{background:var(--blue-l);color:var(--blue)}
+.btn-g:hover{background:#DFE7FC}
+.btn-o{background:transparent;color:var(--mut);border:1px solid var(--line)}
+.btn-o:hover{border-color:var(--blue);color:var(--blue)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn .ico{width:17px;height:17px;flex:none}
+.input,.area{
+  width:100%;border:1px solid var(--line);border-radius:11px;background:#FBFCFE;
+  padding:12px 14px;font-size:16px;min-height:44px;
+}
+.input:focus,.area:focus{border-color:var(--blue);outline:none;background:#fff;box-shadow:0 0 0 3px rgba(47,84,235,.12)}
+.area{min-height:96px;resize:vertical;line-height:1.55}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:13.5px;font-weight:600;color:var(--navy);margin-bottom:6px}
+.field .hint{color:var(--mut);font-size:12.5px;margin-top:4px}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;white-space:nowrap}
+.chip-w{background:var(--warn-l);color:var(--warn)}
+.chip-ok{background:var(--ok-l);color:var(--ok)}
+.chip-n{background:#EFF2F9;color:var(--mut)}
+.chip-t{background:var(--blue-l);color:var(--blue)}
+.empt{text-align:center;color:var(--mut);padding:36px 16px;font-size:14px}
+.empt .big{font-size:16px;color:var(--navy);font-weight:600;margin-bottom:6px}
+
+/* ===== 拆任务页 ===== */
+.split-grid{display:grid;gap:14px;grid-template-columns:1fr}
+.prompt-box{
+  background:#1B2440;color:#E7EDFF;border-radius:12px;padding:14px;
+  font-size:13px;line-height:1.65;white-space:pre-wrap;word-break:break-all;
+  max-height:280px;overflow:auto;
+}
+.steps{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}
+.steps .st{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--mut);background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 13px}
+.steps .st b{background:var(--blue);color:#fff;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:12px;flex:none}
+.steps .st.on b{background:var(--ok)}
+.steps .st.on{color:var(--ok)}
+.row-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}
+
+/* ===== 今日工作台 ===== */
+.day-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.day-head .date{font-size:18px;font-weight:700;color:var(--navy)}
+.day-head .date span{color:var(--mut);font-weight:500;font-size:14px;margin-left:8px}
+.prog{flex:1;min-width:200px;height:10px;background:#E8EDF7;border-radius:999px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--blue);border-radius:999px;transition:width .3s}
+.prog-txt{font-size:13px;color:var(--mut);font-weight:600}
+.titem{display:flex;gap:12px;align-items:flex-start;padding:13px 4px;border-bottom:1px dashed var(--line)}
+.titem:last-child{border-bottom:0}
+.tcheck{flex:none;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:12px;margin-top:-4px}
+.tcheck button{width:24px;height:24px;border-radius:7px;border:2px solid #B9C3DB;background:#fff;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.titem.done .tcheck button{background:var(--ok);border-color:var(--ok)}
+.tcheck svg{width:14px;height:14px;stroke:#fff;stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round;opacity:0;transition:opacity .15s}
+.titem.done .tcheck svg{opacity:1}
+.tbody{flex:1;min-width:0}
+.tbody .act{font-weight:600;font-size:15px;color:var(--ink);word-break:break-word}
+.titem.done .act{color:var(--mut);text-decoration:line-through}
+.tmeta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:5px;font-size:12.5px;color:var(--mut)}
+.tmeta .acc{color:var(--mut)}
+.titem.done .tmeta{opacity:.7}
+.tdel{flex:none;color:#C7CFE0;padding:8px 6px;border-radius:8px}
+.tdel:hover{color:var(--warn);background:var(--warn-l)}
+.quote{border-left:3px solid var(--blue);background:var(--blue-l);border-radius:0 12px 12px 0;padding:12px 16px;font-size:14px;color:var(--navy)}
+.quote b{color:var(--blue)}
+
+/* ===== 全部微任务 ===== */
+.grp{margin-bottom:18px}
+.grp-h{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.grp-h .gname{font-weight:700;color:var(--navy);font-size:15px}
+.grp-h .gcnt{font-size:12px;color:var(--mut);background:#EFF2F9;border-radius:999px;padding:2px 9px}
+.grp-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.bigname{font-size:13px;color:var(--mut);margin:0 0 6px}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+
+/* ===== 关于 ===== */
+.about p{font-size:14.5px;margin-bottom:12px}
+.about h3{font-size:15px;color:var(--navy);margin:18px 0 8px}
+.about ul{margin:0 0 12px 20px;font-size:14.5px}
+.about li{margin-bottom:6px}
+
+/* ===== toast ===== */
+.toast{
+  position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);
+  background:#17223F;color:#fff;padding:11px 18px;border-radius:11px;font-size:14px;
+  opacity:0;pointer-events:none;transition:all .25s;z-index:50;max-width:88vw;text-align:center;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ===== 桌面端 ===== */
+@media (min-width:768px){
+  .brand small{display:inline;font-weight:500;color:var(--mut);font-size:12.5px;margin-left:2px}
+  .split-grid{grid-template-columns:5fr 7fr}
+  main{padding:28px 24px 70px}
+  .foot{justify-content:space-between}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="2" y="2" width="13" height="13" rx="3" fill="#2F54EB"/><rect x="17" y="2" width="13" height="13" rx="3" fill="#8AA0F5"/><rect x="17" y="17" width="13" height="13" rx="3" fill="#2F54EB"/><rect x="2" y="17" width="13" height="13" rx="3" fill="#E1E7FB"/></svg>
+      <span>开工先</span><small>反拖延AI工作台</small>
+    </div>
+    <nav class="tabs" aria-label="主导航">
+      <a href="#/split" data-v="split">拆任务</a>
+      <a href="#/today" data-v="today">今日工作台</a>
+      <a href="#/tasks" data-v="tasks">全部微任务</a>
+      <a href="#/about" data-v="about">关于</a>
+    </nav>
+  </div>
+</header>
+
+<main id="app"></main>
+
+<footer class="foot">
+  <span>WaytoAGI 1024 办公赛道作品 · 用豆包工作搭的 AI 工作台</span>
+  <span>数据只存在你的浏览器本地，可导出随身带走</span>
+</footer>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(function(){
+"use strict";
+/* ===== 数据层 ===== */
+var LS_KEY = "kgx_state_v1";
+var state = load();
+function load(){
+  try{
+    var raw = localStorage.getItem(LS_KEY);
+    if(raw){ var s = JSON.parse(raw); if(s && s.tasks) return s; }
+  }catch(e){}
+  return {tasks:[], big:"", deadline:"", created:Date.now()};
+}
+function save(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){} }
+function todayStr(){
+  var d = new Date();
+  return d.getFullYear() + "-" + pad(d.getMonth()+1) + "-" + pad(d.getDate());
+}
+function pad(n){ return (n<10?"0":"") + n; }
+function addDays(s, n){
+  var d = new Date(s + "T00:00:00");
+  d.setDate(d.getDate()+n);
+  return d.getFullYear() + "-" + pad(d.getMonth()+1) + "-" + pad(d.getDate());
+}
+function diffDays(a, b){ // b - a 的天数
+  var da = new Date(a+"T00:00:00"), db = new Date(b+"T00:00:00");
+  return Math.round((db-da)/86400000);
+}
+function dateLabel(s){
+  var t = todayStr();
+  if(s===t) return "今天";
+  if(s===addDays(t,1)) return "明天";
+  if(s===addDays(t,2)) return "后天";
+  var m = s.split("-");
+  return parseInt(m[1],10)+"月"+parseInt(m[2],10)+"日";
+}
+function uid(){ return "t"+Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+
+/* ===== 提示词与规则拆解 ===== */
+var RULES = [
+  "1. 每项微任务不超过30分钟，动作具体到能直接动手（如“打开文档”“导出一张表”“发一条消息”）。",
+  "2. 每项必须给出三要素：动作｜时长｜验收标准（做到哪一步就算完成，明确“够好”的边界，拒绝完美主义）。",
+  "3. 第一项永远是「2分钟开场任务」：最小、无压力、5分钟内可完成，目的是先启动。",
+  "4. 从截止日期倒排 deadline，把微任务分到每天，每天最多3个，不要把整座任务山一次性甩出来。",
+  "5. 最后用☐列出“今天只做这2-3步”。"
+].join("\n");
+
+function buildPrompt(big, deadline){
+  var t = todayStr();
+  return "你是「开工先」反拖延任务拆分引擎。请把下面这个大任务拆成今天就能开始做的微任务。\n\n"
+    + "【大任务】" + big + "\n"
+    + "【截止日期】" + deadline + "\n"
+    + "【今天日期】" + t + "\n\n"
+    + "拆分规则：\n" + RULES + "\n\n"
+    + "输出格式（严格按此格式，字段用｜分隔，不要输出其他内容）：\n"
+    + "【大任务】……\n"
+    + "【第1步·今天】动作｜时长｜验收标准\n"
+    + "【第2步·今天】动作｜时长｜验收标准\n"
+    + "【第3步·明天】动作｜时长｜验收标准\n"
+    + "【今天只做】☐ 第1步 …\n";
+}
+
+function skeletonTasks(big, deadline){
+  var t = todayStr();
+  var days = diffDays(t, deadline);
+  if(days < 1) days = 1;
+  var base = [
+    {action:"2分钟开场：新建一个文档/文件夹，写下「"+big+"」的标题和3个要做的板块", minutes:"5分钟", accept:"文档已建好，标题和3个板块名写上了"},
+    {action:"把「"+big+"」需要的材料、数据、参考找齐，归拢到同一个地方", minutes:"20分钟", accept:"材料已归拢到一处，缺的标了“待补”"},
+    {action:"写出「"+big+"」的第一版草稿，允许粗糙", minutes:"30分钟", accept:"初稿完成，不追求完美"},
+    {action:"对照验收标准检查初稿，补上最关键的2处缺口", minutes:"25分钟", accept:"关键缺口已补齐"},
+    {action:"整体过一遍：格式整理、数据核对、语气顺一遍", minutes:"20分钟", accept:"定稿可交付"},
+    {action:"把「"+big+"」的成果发给/提交给接收方，并说明完成情况", minutes:"10分钟", accept:"已发出，接收方确认收到"}
+  ];
+  var dates = [t];
+  for(var i=1;i<=days;i++) dates.push(addDays(t,i));
+  var out = base.map(function(it, k){
+    var di = 0;
+    if(k>0) di = Math.min(days, Math.round((k-1)*days/(base.length-2)) || 1);
+    return {big:big, action:it.action, minutes:it.minutes, accept:it.accept, date:dates[di]||t, done:false, src:"engine"};
+  });
+  return out;
+}
+
+/* ===== 粘贴解析 ===== */
+function parsePasted(text, big, deadline){
+  var t = todayStr();
+  var cur = null;
+  var out = [];
+  var lines = String(text||"").split(/\r?\n/);
+  lines.forEach(function(raw){
+    var line = raw.trim();
+    if(!line) return;
+    var m = line.match(/【大任务】(.+)/);
+    if(m){ big = m[1].trim(); return; }
+    m = line.match(/【第\d+步·(.+?)】/);
+    if(m){
+      var tag = m[1];
+      if(/今天|今日|第1天|D1/i.test(tag)) cur = t;
+      else if(/明天|第2天|D2/i.test(tag)) cur = addDays(t,1);
+      else if(/后天|第3天|D3/i.test(tag)) cur = addDays(t,2);
+      else cur = null;
+      line = line.replace(/【第\d+步·.+?】/, "").trim();
+    }
+    var isTask = /^☐/.test(line) || /^[-*] /.test(line) || /^\[[ xX]\]/.test(line) || /^\d+[.、)]/.test(line);
+    if(!isTask) return;
+    line = line.replace(/^☐\s*/, "").replace(/^[-*]\s+/, "").replace(/^\[[ xX]\]\s*/i, "").replace(/^\d+[.、)]\s*/, "");
+    var parts = line.split(/[|｜]/).map(function(p){ return p.trim(); });
+    var action = parts[0] || line;
+    var minutes = parts[1] || "—";
+    var accept = parts[2] || "做完这一步就算完成";
+    out.push({big:big, action:action, minutes:minutes, accept:accept, date:cur || t, done:false, src:"ai"});
+  });
+  return out;
+}
+
+/* ===== 视图渲染 ===== */
+var app = document.getElementById("app");
+function route(){
+  var h = location.hash || "#/today";
+  var name = h.replace("#/","").split("?")[0];
+  if(["split","today","tasks","about"].indexOf(name)<0) name = "today";
+  document.querySelectorAll(".tabs a").forEach(function(a){
+    a.classList.toggle("on", a.getAttribute("data-v")===name);
+  });
+  document.querySelectorAll(".view").forEach(function(v){ v.classList.remove("on"); });
+  var el = document.getElementById("view-"+name);
+  if(!el){ el = document.createElement("div"); el.id="view-"+name; el.className="view"; app.appendChild(el); }
+  el.classList.add("on");
+  render(name, el);
+}
+
+function render(name, el){
+  if(name==="split") el.innerHTML = vSplit();
+  else if(name==="today") el.innerHTML = vToday();
+  else if(name==="tasks") el.innerHTML = vTasks();
+  else if(name==="about") el.innerHTML = vAbout();
+}
+
+function vSplit(){
+  var t = todayStr();
+  return '<div class="card">'
+    + '<h2>把一个让你头大的任务，拆成今天就能做完的一小步</h2>'
+    + '<p class="sub">越模糊的任务越让人拖延。输入大任务，30 秒生成拆分提示词，去豆包工作让 AI 拆，粘贴回来即完成。</p>'
+    + '<div class="steps">'
+    +   '<span class="st"><b>1</b>输入大任务</span>'
+    +   '<span class="st"><b>2</b>复制提示词给 AI</span>'
+    +   '<span class="st"><b>3</b>回填，今天只做这几步</span>'
+    + '</div>'
+    + '<div class="field"><label for="in-big">大任务（越模糊越好，直接说就行）</label>'
+    +   '<textarea id="in-big" class="area" placeholder="例如：Q4 产品复盘报告，一直拖着没动"></textarea>'
+    + '</div>'
+    + '<div class="field"><label for="in-date">截止日期</label>'
+    +   '<input id="in-date" class="input" type="date" min="'+t+'" value="'+(state.deadline||addDays(t,3))+'">'
+    + '</div>'
+    + '<div class="row-actions">'
+    +   '<button class="btn btn-p" id="btn-gen"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L4.5 13.5H11L9.5 22 19 10h-6.5L13 2z"/></svg>生成拆分提示词</button>'
+    +   '<button class="btn btn-g" id="btn-skel">先用示例骨架拆一版</button>'
+    + '</div>'
+    + '<div class="field" id="gen-area" style="display:none;margin-top:16px">'
+    +   '<label>提示词已生成（已自动复制，去豆包工作粘贴）</label>'
+    +   '<div class="prompt-box" id="prompt-box"></div>'
+    +   '<div class="row-actions" style="margin-top:10px">'
+    +     '<button class="btn btn-g" id="btn-copy">重新复制</button>'
+    +     '<button class="btn btn-o" id="btn-swap">AI 已回复，粘贴解析</button>'
+    +   '</div>'
+    + '</div>'
+    + '<div class="field" id="paste-area" style="display:none;margin-top:16px">'
+    +   '<label>把 AI 的回复粘贴进来，点解析（自动排期到今天/明天/后天）</label>'
+    +   '<textarea id="in-paste" class="area" placeholder="粘贴 AI 返回的【第1步·今天】…清单"></textarea>'
+    +   '<div class="row-actions" style="margin-top:10px">'
+    +     '<button class="btn btn-p" id="btn-parse">解析并加入工作台</button>'
+    +     '<button class="btn btn-o" id="btn-cancel-paste">取消</button>'
+    +   '</div>'
+    + '</div>'
+    + '</div>';
+}
+
+function vToday(){
+  var t = todayStr();
+  var today = state.tasks.filter(function(x){ return x.date===t; });
+  var overdue = state.tasks.filter(function(x){ return !x.done && x.date < t; });
+  var done = today.filter(function(x){ return x.done; }).length;
+  var pct = today.length ? Math.round(done/today.length*100) : 0;
+  var html = '<div class="card">'
+    + '<div class="day-head">'
+    +   '<div class="date">今日工作台<span>'+dateLabel(t)+' · 只做今天这几步</span></div>'
+    +   '<div class="prog-txt" id="prog-txt">'+done+' / '+today.length+' 完成</div>'
+    +   '<div class="prog"><i id="prog-bar" style="width:'+pct+'%"></i></div>'
+    + '</div>'
+    + '</div>';
+  if(today.length===0 && overdue.length===0){
+    html += '<div class="card"><div class="empt"><div class="big">今天还没有任务</div>去「拆任务」输入一件让你头大的事，30 秒拆出今天该做的 2~3 步。<div style="margin-top:16px"><a class="btn btn-p" href="#/split">去拆一个任务</a></div></div></div>';
+  } else {
+    if(today.length){
+      html += '<div class="card"><h2>今天只做这几步</h2>' + today.map(taskItem).join("") + '</div>';
+    }
+    if(overdue.length){
+      html += '<div class="card"><h2>逾期未做</h2><p class="sub">别自责，挑最小的那一步先做完。</p>' + overdue.map(taskItem).join("") + '</div>';
+    }
+  }
+  html += '<div class="card"><div class="quote">原来：一个大任务要磨蹭大半天才启动。<br>现在：拆完 3 分钟就能上手，每天提前一点，最后提前完成。</div></div>';
+  return html;
+}
+
+function taskItem(x){
+  var chip = x.done ? '<span class="chip chip-ok">已完成</span>'
+    : (x.date < todayStr() ? '<span class="chip chip-w">逾期</span>' : '<span class="chip chip-t">'+dateLabel(x.date)+'</span>');
+  return '<div class="titem'+(x.done?" done":"")+'" data-id="'+x.id+'">'
+    + '<div class="tcheck"><button class="tg" data-id="'+x.id+'" aria-label="标记完成"><svg viewBox="0 0 24 24"><path d="M5 13l5 5 9-11"/></svg></button></div>'
+    + '<div class="tbody">'
+    +   '<div class="act">'+esc(x.action)+'</div>'
+    +   '<div class="tmeta">'+chip+'<span>'+esc(x.minutes)+'</span><span class="acc">验收：'+esc(x.accept)+'</span></div>'
+    + '</div>'
+    + '<button class="tdel" data-id="'+x.id+'" aria-label="删除任务"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>'
+    + '</div>';
+}
+
+function vTasks(){
+  var t = todayStr();
+  var groups = {};
+  var bigs = {};
+  state.tasks.forEach(function(x){
+    (groups[x.date] = groups[x.date] || []).push(x);
+    bigs[x.date] = x.big;
+  });
+  var keys = Object.keys(groups).sort();
+  var html = '<div class="card">'
+    + '<h2>全部微任务</h2>'
+    + '<p class="sub">按 deadline 倒排，每天最多 3 个。任务池里放着「今天不该想」的部分，到时候自然会轮到它们。</p>'
+    + '</div>';
+  if(keys.length===0){
+    html += '<div class="card"><div class="empt"><div class="big">任务池还是空的</div>去「拆任务」把第一件头大的事拆进来。<div style="margin-top:16px"><a class="btn btn-p" href="#/split">去拆一个任务</a></div></div></div>';
+  } else {
+    keys.forEach(function(k){
+      var items = groups[k];
+      html += '<div class="grp"><div class="grp-h"><span class="gname">'+dateLabel(k)+'</span><span class="gcnt">'+items.length+' 项</span></div>'
+        + '<div class="grp-card">'
+        + (bigs[k] ? '<div class="bigname" style="padding:12px 16px 0">大任务：'+esc(bigs[k])+'</div>' : '')
+        + items.map(taskItem).join("")
+        + '</div></div>';
+    });
+  }
+  html += '<div class="card">'
+    + '<h2>手动加一项</h2>'
+    + '<div class="field"><input id="ma-action" class="input" placeholder="动作（例如：把方案发群里等确认）"></div>'
+    + '<div class="field"><input id="ma-date" class="input" type="date" min="'+t+'" value="'+t+'"></div>'
+    + '<div class="field"><input id="ma-accept" class="input" placeholder="验收标准（可选，做到这就算完成）"></div>'
+    + '<button class="btn btn-p" id="btn-add-manual">加入任务池</button>'
+    + '</div>'
+    + '<div class="card"><h2>数据随身带</h2><p class="sub">全部数据只存在浏览器本地。换电脑或换人用：导出备份，到新环境导入即可——10 分钟配好。</p>'
+    + '<div class="tools">'
+    +   '<button class="btn btn-o" id="btn-export">导出 JSON 备份</button>'
+    +   '<button class="btn btn-o" id="btn-import">导入备份</button>'
+    +   '<input type="file" id="in-import" accept="application/json" style="display:none">'
+    +   '<button class="btn btn-o" id="btn-clear">清空重来</button>'
+    + '</div></div>';
+  return html;
+}
+
+function vAbout(){
+  return '<div class="card about">'
+    + '<h2>开工先 · 反拖延 AI 工作台</h2>'
+    + '<p>一个专为拖延症职场人打造的 AI 工作台。每天上班先打开它：把一个模糊的大任务交给 AI，它会拆成一串 30 分钟内能完成的微任务，逐项配上倒排的 deadline 和明确的验收标准（“做到 X 就算完成”），并用“先做 2 分钟”的开场动作消除启动阻力。</p>'
+    + '<h3>它怎么治拖延</h3>'
+    + '<ul>'
+    + '<li><b>先做 2 分钟</b>：每次拆解的第一项永远是最小、最无压力的开场动作——人一旦启动，就会惯性做下去。</li>'
+    + '<li><b>明确“做到哪算完”</b>：每个微任务带验收标准，把模糊的“做到完美”替换成可打勾的“做到够好”。</li>'
+    + '<li><b>一天只面对几步</b>：工作台每天只显示当天该做的 2~3 个微任务，不给你看整座任务山。</li>'
+    + '<li><b>倒排 deadline</b>：从截止日反推，每天的任务都是外部承诺，做完打勾即交付。</li>'
+    + '</ul>'
+    + '<h3>换人也能用</h3>'
+    + '<p>同一套提示词发给任何同事即可使用；数据可导出/导入，10 分钟配好自己的工作台。</p>'
+    + '<h3>配合豆包工作</h3>'
+    + '<p>拆解用豆包工作完成：本页生成提示词 → 粘贴给豆包工作 → 回复粘贴回来自动排期。也可设置每日定时提醒，早上一打开就是“今天只做这几步”。</p>'
+    + '</div>';
+}
+
+/* ===== 交互 ===== */
+var toastTimer = null;
+function toast(msg){
+  var el = document.getElementById("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ el.classList.remove("show"); }, 2200);
+}
+function copyText(txt){
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    return navigator.clipboard.writeText(txt).then(function(){ return true; }, function(){ return fallbackCopy(txt); });
+  }
+  return Promise.resolve(fallbackCopy(txt));
+}
+function fallbackCopy(txt){
+  var ta = document.createElement("textarea");
+  ta.value = txt; ta.style.position="fixed"; ta.style.opacity="0";
+  document.body.appendChild(ta); ta.select();
+  try{ document.execCommand("copy"); }catch(e){}
+  document.body.removeChild(ta);
+  return true;
+}
+
+app.addEventListener("click", function(ev){
+  var btn = ev.target.closest("button");
+  if(!btn) return;
+  var id = btn.getAttribute("data-id");
+
+  if(btn.id==="btn-gen"){
+    var big = document.getElementById("in-big").value.trim();
+    var dl = document.getElementById("in-date").value;
+    if(!big){ toast("先写下大任务，越模糊越好"); return; }
+    if(!dl){ toast("先选截止日期"); return; }
+    state.big = big; state.deadline = dl; save();
+    var prompt = buildPrompt(big, dl);
+    document.getElementById("prompt-box").textContent = prompt;
+    document.getElementById("gen-area").style.display = "block";
+    document.getElementById("paste-area").style.display = "none";
+    copyText(prompt).then(function(){ toast("提示词已复制，去豆包工作粘贴"); });
+    return;
+  }
+  if(btn.id==="btn-copy"){
+    var txt = document.getElementById("prompt-box").textContent;
+    copyText(txt).then(function(){ toast("已重新复制"); });
+    return;
+  }
+  if(btn.id==="btn-swap"){
+    document.getElementById("paste-area").style.display = "block";
+    return;
+  }
+  if(btn.id==="btn-cancel-paste"){
+    document.getElementById("paste-area").style.display = "none";
+    return;
+  }
+  if(btn.id==="btn-parse"){
+    var text = document.getElementById("in-paste").value;
+    if(!text.trim()){ toast("先粘贴 AI 的回复"); return; }
+    var items = parsePasted(text, state.big, state.deadline);
+    if(items.length===0){ toast("没解析到任务行，请确认格式"); return; }
+    items.forEach(function(x){ x.id = uid(); state.tasks.push(x); });
+    save();
+    toast("已加入 "+items.length+" 个微任务");
+    location.hash = "#/today"; render("today", document.getElementById("view-today"));
+    return;
+  }
+  if(btn.id==="btn-skel"){
+    var big2 = document.getElementById("in-big").value.trim();
+    var dl2 = document.getElementById("in-date").value;
+    if(!big2){ toast("先写下大任务"); return; }
+    if(!dl2){ toast("先选截止日期"); return; }
+    state.big = big2; state.deadline = dl2;
+    var items = skeletonTasks(big2, dl2);
+    items.forEach(function(x){ x.id = uid(); state.tasks.push(x); });
+    save();
+    toast("已用示例骨架拆出 "+items.length+" 步（建议再用 AI 精拆替换）");
+    location.hash = "#/today"; render("today", document.getElementById("view-today"));
+    return;
+  }
+  if(btn.id==="btn-add-manual"){
+    var act = document.getElementById("ma-action").value.trim();
+    if(!act){ toast("写下要做什么"); return; }
+    var d = document.getElementById("ma-date").value || todayStr();
+    var acc = document.getElementById("ma-accept").value.trim() || "做完这一步就算完成";
+    state.tasks.push({id:uid(), big:state.big||"手动添加", action:act, minutes:"—", accept:acc, date:d, done:false, src:"manual"});
+    save();
+    document.getElementById("ma-action").value="";
+    document.getElementById("ma-accept").value="";
+    toast("已加入任务池");
+    render("tasks", document.getElementById("view-tasks"));
+    return;
+  }
+  if(btn.classList.contains("tg")){
+    var t = state.tasks.find(function(x){ return x.id===id; });
+    if(t){ t.done = !t.done; save(); renderCurrent(); }
+    return;
+  }
+  if(btn.classList.contains("tdel")){
+    state.tasks = state.tasks.filter(function(x){ return x.id!==id; });
+    save(); renderCurrent(); toast("已删除");
+    return;
+  }
+  if(btn.id==="btn-export"){
+    var blob = new Blob([JSON.stringify(state,null,2)], {type:"application/json"});
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "开工先-工作台备份.json";
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast("已导出备份文件");
+    return;
+  }
+  if(btn.id==="btn-import"){
+    document.getElementById("in-import").click();
+    return;
+  }
+  if(btn.id==="btn-clear"){
+    if(confirm("确定清空当前全部微任务？此操作不可撤销。")){
+      state.tasks = []; state.big=""; state.deadline=""; save();
+      render("tasks", document.getElementById("view-tasks"));
+      toast("已清空");
+    }
+    return;
+  }
+});
+
+app.addEventListener("change", function(ev){
+  var fi = ev.target;
+  if(fi.id==="in-import" && fi.files && fi.files[0]){
+    var r = new FileReader();
+    r.onload = function(){
+      try{
+        var s = JSON.parse(r.result);
+        if(!s || !s.tasks){ throw 0; }
+        state.tasks = s.tasks; state.big = s.big||""; state.deadline = s.deadline||"";
+        save();
+        toast("导入成功，共 "+s.tasks.length+" 项");
+        render("tasks", document.getElementById("view-tasks"));
+      }catch(e){ toast("文件格式不对，请选「开工先」导出的备份"); }
+    };
+    r.readAsText(fi.files[0]);
+    fi.value = "";
+  }
+});
+
+function renderCurrent(){
+  var on = document.querySelector(".view.on");
+  if(on) render(on.id.replace("view-",""), on);
+}
+
+window.addEventListener("hashchange", route);
+document.addEventListener("DOMContentLoaded", function(){ route(); });
+if(document.readyState !== "loading") route();
+})();
+</script>
+</body>
+</html>
