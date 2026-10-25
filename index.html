@@ -4,14 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>开工先 · 反拖延AI工作台</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='2' y='2' width='13' height='13' rx='3' fill='%232F54EB'/%3E%3Crect x='17' y='2' width='13' height='13' rx='3' fill='%238AA0F5'/%3E%3Crect x='17' y='17' width='13' height='13' rx='3' fill='%232F54EB'/%3E%3Crect x='2' y='17' width='13' height='13' rx='3' fill='%23E1E7FB'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='2' y='2' width='13' height='13' rx='3' fill='%232DD4BF'/%3E%3Crect x='17' y='2' width='13' height='13' rx='3' fill='%235EEAD4'/%3E%3Crect x='17' y='17' width='13' height='13' rx='3' fill='%232DD4BF'/%3E%3Crect x='2' y='17' width='13' height='13' rx='3' fill='%23152A2E'/%3E%3C/svg%3E">
 <style>
 /* ===== 基础 ===== */
 :root{
-  --blue:#2F54EB; --blue-d:#2548C8; --blue-l:#EEF2FF;
-  --navy:#17223F; --ink:#262C3A; --mut:#68738C;
-  --bg:#F4F6FB; --card:#FFFFFF; --line:#E3E8F2;
-  --ok:#1E9D5F; --ok-l:#E6F6EE; --warn:#C2410C; --warn-l:#FDEBE2;
+  --teal:#2DD4BF; --teal-d:#18B8A3; --teal-br:#5EEAD4;
+  --teal-l:rgba(45,212,191,.12); --teal-l2:rgba(45,212,191,.2);
+  --bg:#0A0F16; --bg2:#0D141C; --card:#121A24; --card2:#16202C;
+  --line:#22303E; --line2:#2A3B4C;
+  --ink:#E8EFF6; --mut:#8CA3B3; --dim:#5C7284;
+  --ok:#34D399; --ok-l:rgba(52,211,153,.14);
+  --warn:#FB923C; --warn-l:rgba(251,146,60,.14);
+  --danger:#F87171;
   --r:14px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -20,39 +24,38 @@ body{
   font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","HarmonyOS Sans SC","Source Han Sans SC","Microsoft YaHei",sans-serif;
   background:var(--bg);color:var(--ink);font-size:15px;line-height:1.6;
 }
-a{color:var(--blue);text-decoration:none}
-button{font:inherit;cursor:pointer;border:0;background:none}
+a{color:var(--teal-br);text-decoration:none}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
 input,textarea,select{font:inherit;color:var(--ink)}
-:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+::selection{background:rgba(45,212,191,.3)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 
 /* ===== 顶栏 ===== */
 .topbar{
-  position:sticky;top:0;z-index:20;background:rgba(255,255,255,.92);
+  position:sticky;top:0;z-index:20;background:rgba(10,15,22,.85);
   backdrop-filter:blur(8px);border-bottom:1px solid var(--line);
 }
 .topbar-in{max-width:1080px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:16px}
-.brand{display:flex;align-items:center;gap:9px;font-weight:700;font-size:18px;color:var(--navy);white-space:nowrap}
+.brand{display:flex;align-items:center;gap:9px;font-weight:700;font-size:18px;color:var(--ink);white-space:nowrap}
 .brand svg{width:26px;height:26px;flex:none}
-.brand small{display:none}
+.brand small{display:none;font-weight:500;color:var(--mut);font-size:12.5px}
 .tabs{display:flex;gap:2px;margin-left:auto;overflow-x:auto;scrollbar-width:none}
 .tabs::-webkit-scrollbar{display:none}
-.tabs a{
-  padding:8px 14px;border-radius:9px;color:var(--mut);font-weight:500;font-size:14px;white-space:nowrap;
-}
-.tabs a:hover{background:var(--blue-l);color:var(--blue)}
-.tabs a.on{background:var(--blue);color:#fff}
+.tabs a{padding:8px 14px;border-radius:9px;color:var(--mut);font-weight:500;font-size:14px;white-space:nowrap}
+.tabs a:hover{background:var(--teal-l);color:var(--teal-br)}
+.tabs a.on{background:var(--teal);color:#06281F;font-weight:600}
 
 /* ===== 布局 ===== */
 main{max-width:1080px;margin:0 auto;padding:22px 16px 60px}
 .view{display:none}
 .view.on{display:block}
-.foot{max-width:1080px;margin:0 auto;padding:18px 16px 40px;border-top:1px solid var(--line);color:var(--mut);font-size:12.5px;display:flex;gap:14px;flex-wrap:wrap}
+.foot{max-width:1080px;margin:0 auto;padding:18px 16px 40px;border-top:1px solid var(--line);color:var(--dim);font-size:12.5px;display:flex;gap:14px;flex-wrap:wrap}
 
 /* ===== 通用组件 ===== */
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px}
 .card+.card{margin-top:14px}
-.card h2{font-size:17px;color:var(--navy);margin-bottom:4px}
+.card h2{font-size:17px;color:var(--ink);margin-bottom:4px}
 .card .sub{color:var(--mut);font-size:13px;margin-bottom:14px}
 .btn{
   display:inline-flex;align-items:center;justify-content:center;gap:8px;
@@ -60,99 +63,119 @@ main{max-width:1080px;margin:0 auto;padding:22px 16px 60px}
   transition:background .15s,color .15s,border-color .15s,transform .1s;
 }
 .btn:active{transform:translateY(1px)}
-.btn-p{background:var(--blue);color:#fff}
-.btn-p:hover{background:var(--blue-d)}
-.btn-g{background:var(--blue-l);color:var(--blue)}
-.btn-g:hover{background:#DFE7FC}
-.btn-o{background:transparent;color:var(--mut);border:1px solid var(--line)}
-.btn-o:hover{border-color:var(--blue);color:var(--blue)}
-.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-p{background:var(--teal);color:#06281F}
+.btn-p:hover{background:var(--teal-br)}
+.btn-g{background:var(--teal-l);color:var(--teal-br)}
+.btn-g:hover{background:var(--teal-l2)}
+.btn-o{background:transparent;color:var(--mut);border:1px solid var(--line2)}
+.btn-o:hover{border-color:var(--teal);color:var(--teal-br)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
 .btn .ico{width:17px;height:17px;flex:none}
 .input,.area{
-  width:100%;border:1px solid var(--line);border-radius:11px;background:#FBFCFE;
-  padding:12px 14px;font-size:16px;min-height:44px;
+  width:100%;border:1px solid var(--line2);border-radius:11px;background:var(--bg2);
+  padding:12px 14px;font-size:16px;min-height:44px;color:var(--ink);
 }
-.input:focus,.area:focus{border-color:var(--blue);outline:none;background:#fff;box-shadow:0 0 0 3px rgba(47,84,235,.12)}
+.input:focus,.area:focus{border-color:var(--teal);outline:none;background:#0F1722;box-shadow:0 0 0 3px rgba(45,212,191,.15)}
 .area{min-height:96px;resize:vertical;line-height:1.55}
 .field{margin-bottom:14px}
-.field label{display:block;font-size:13.5px;font-weight:600;color:var(--navy);margin-bottom:6px}
+.field label{display:block;font-size:13.5px;font-weight:600;color:var(--ink);margin-bottom:6px}
 .field .hint{color:var(--mut);font-size:12.5px;margin-top:4px}
 .chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;white-space:nowrap}
 .chip-w{background:var(--warn-l);color:var(--warn)}
 .chip-ok{background:var(--ok-l);color:var(--ok)}
-.chip-n{background:#EFF2F9;color:var(--mut)}
-.chip-t{background:var(--blue-l);color:var(--blue)}
+.chip-n{background:rgba(140,163,179,.12);color:var(--mut)}
+.chip-t{background:var(--teal-l);color:var(--teal-br)}
 .empt{text-align:center;color:var(--mut);padding:36px 16px;font-size:14px}
-.empt .big{font-size:16px;color:var(--navy);font-weight:600;margin-bottom:6px}
+.empt .big{font-size:16px;color:var(--ink);font-weight:600;margin-bottom:6px}
 
 /* ===== 拆任务页 ===== */
 .split-grid{display:grid;gap:14px;grid-template-columns:1fr}
-.prompt-box{
-  background:#1B2440;color:#E7EDFF;border-radius:12px;padding:14px;
-  font-size:13px;line-height:1.65;white-space:pre-wrap;word-break:break-all;
-  max-height:280px;overflow:auto;
-}
 .steps{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}
-.steps .st{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--mut);background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 13px}
-.steps .st b{background:var(--blue);color:#fff;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:12px;flex:none}
-.steps .st.on b{background:var(--ok)}
+.steps .st{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--mut);background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 13px}
+.steps .st b{background:var(--teal);color:#06281F;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:12px;flex:none}
+.steps .st.on b{background:var(--ok);color:#06281F}
 .steps .st.on{color:var(--ok)}
 .row-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}
 
+/* 拆解结果 */
+.result-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.result-head .ttl{font-weight:700;color:var(--ink);font-size:15px}
+.result-head .sub{color:var(--mut);font-size:12.5px}
+.rrow{display:grid;gap:8px;grid-template-columns:1fr;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--bg2);margin-bottom:10px}
+.rrow:first-child{border-color:var(--teal-l2);background:linear-gradient(180deg,rgba(45,212,191,.07),var(--bg2))}
+.rrow:first-child .rstep{color:var(--teal-br)}
+.rstep{font-size:12px;font-weight:700;color:var(--mut);letter-spacing:.5px}
+.rrow input,.rrow .accept-in{background:var(--card2);border-color:var(--line2)}
+.acc-in{font-size:13px}
+.rfoot{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.prompt-box{
+  background:#0E1720;color:#BFE8DF;border:1px solid var(--line2);border-radius:12px;padding:14px;
+  font-size:13px;line-height:1.65;white-space:pre-wrap;word-break:break-all;max-height:260px;overflow:auto;
+}
+
 /* ===== 今日工作台 ===== */
 .day-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.day-head .date{font-size:18px;font-weight:700;color:var(--navy)}
+.day-head .date{font-size:18px;font-weight:700;color:var(--ink)}
 .day-head .date span{color:var(--mut);font-weight:500;font-size:14px;margin-left:8px}
-.prog{flex:1;min-width:200px;height:10px;background:#E8EDF7;border-radius:999px;overflow:hidden}
-.prog i{display:block;height:100%;background:var(--blue);border-radius:999px;transition:width .3s}
+.prog{flex:1;min-width:200px;height:10px;background:var(--line);border-radius:999px;overflow:hidden}
+.prog i{display:block;height:100%;background:linear-gradient(90deg,var(--teal-d),var(--teal-br));border-radius:999px;transition:width .3s}
 .prog-txt{font-size:13px;color:var(--mut);font-weight:600}
 .titem{display:flex;gap:12px;align-items:flex-start;padding:13px 4px;border-bottom:1px dashed var(--line)}
 .titem:last-child{border-bottom:0}
-.tcheck{flex:none;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:12px;margin-top:-4px}
-.tcheck button{width:24px;height:24px;border-radius:7px;border:2px solid #B9C3DB;background:#fff;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.tcheck{flex:none;width:44px;height:44px;display:flex;align-items:center;justify-content:center;margin-top:-4px}
+.tcheck button{width:24px;height:24px;border-radius:7px;border:2px solid var(--line2);background:var(--bg2);display:flex;align-items:center;justify-content:center;transition:all .15s}
 .titem.done .tcheck button{background:var(--ok);border-color:var(--ok)}
-.tcheck svg{width:14px;height:14px;stroke:#fff;stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round;opacity:0;transition:opacity .15s}
+.tcheck svg{width:14px;height:14px;stroke:#06281F;stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round;opacity:0;transition:opacity .15s}
 .titem.done .tcheck svg{opacity:1}
 .tbody{flex:1;min-width:0}
 .tbody .act{font-weight:600;font-size:15px;color:var(--ink);word-break:break-word}
-.titem.done .act{color:var(--mut);text-decoration:line-through}
+.titem.done .act{color:var(--dim);text-decoration:line-through}
 .tmeta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:5px;font-size:12.5px;color:var(--mut)}
 .tmeta .acc{color:var(--mut)}
 .titem.done .tmeta{opacity:.7}
-.tdel{flex:none;color:#C7CFE0;padding:8px 6px;border-radius:8px}
-.tdel:hover{color:var(--warn);background:var(--warn-l)}
-.quote{border-left:3px solid var(--blue);background:var(--blue-l);border-radius:0 12px 12px 0;padding:12px 16px;font-size:14px;color:var(--navy)}
-.quote b{color:var(--blue)}
+.tdel{flex:none;color:var(--line2);padding:8px 6px;border-radius:8px}
+.tdel:hover{color:var(--danger);background:var(--warn-l)}
+.quote{border-left:3px solid var(--teal);background:var(--teal-l);border-radius:0 12px 12px 0;padding:12px 16px;font-size:14px;color:var(--ink)}
+.quote b{color:var(--teal-br)}
 
 /* ===== 全部微任务 ===== */
 .grp{margin-bottom:18px}
 .grp-h{display:flex;align-items:center;gap:10px;margin-bottom:8px}
-.grp-h .gname{font-weight:700;color:var(--navy);font-size:15px}
-.grp-h .gcnt{font-size:12px;color:var(--mut);background:#EFF2F9;border-radius:999px;padding:2px 9px}
+.grp-h .gname{font-weight:700;color:var(--ink);font-size:15px}
+.grp-h .gcnt{font-size:12px;color:var(--mut);background:rgba(140,163,179,.12);border-radius:999px;padding:2px 9px}
 .grp-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
 .bigname{font-size:13px;color:var(--mut);margin:0 0 6px}
 .tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
 
+/* ===== 设置区 ===== */
+details.ai-set{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--bg2);margin-top:14px}
+details.ai-set summary{cursor:pointer;font-weight:600;color:var(--teal-br);font-size:14px;list-style:none;display:flex;align-items:center;gap:8px}
+details.ai-set summary::before{content:"▸";transition:transform .15s}
+details.ai-set[open] summary::before{transform:rotate(90deg)}
+.ai-state{font-size:12.5px;color:var(--mut);margin:8px 0 0}
+.ai-state b{color:var(--ok)}
+
 /* ===== 关于 ===== */
 .about p{font-size:14.5px;margin-bottom:12px}
-.about h3{font-size:15px;color:var(--navy);margin:18px 0 8px}
+.about h3{font-size:15px;color:var(--ink);margin:18px 0 8px}
 .about ul{margin:0 0 12px 20px;font-size:14.5px}
 .about li{margin-bottom:6px}
 
 /* ===== toast ===== */
 .toast{
   position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);
-  background:#17223F;color:#fff;padding:11px 18px;border-radius:11px;font-size:14px;
+  background:#1E2A38;border:1px solid var(--line2);color:var(--ink);padding:11px 18px;border-radius:11px;font-size:14px;
   opacity:0;pointer-events:none;transition:all .25s;z-index:50;max-width:88vw;text-align:center;
 }
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
 /* ===== 桌面端 ===== */
 @media (min-width:768px){
-  .brand small{display:inline;font-weight:500;color:var(--mut);font-size:12.5px;margin-left:2px}
+  .brand small{display:inline}
   .split-grid{grid-template-columns:5fr 7fr}
   main{padding:28px 24px 70px}
   .foot{justify-content:space-between}
+  .rrow{grid-template-columns:auto 1fr 120px 1fr;align-items:center}
 }
 </style>
 </head>
@@ -161,7 +184,7 @@ main{max-width:1080px;margin:0 auto;padding:22px 16px 60px}
 <header class="topbar">
   <div class="topbar-in">
     <div class="brand">
-      <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="2" y="2" width="13" height="13" rx="3" fill="#2F54EB"/><rect x="17" y="2" width="13" height="13" rx="3" fill="#8AA0F5"/><rect x="17" y="17" width="13" height="13" rx="3" fill="#2F54EB"/><rect x="2" y="17" width="13" height="13" rx="3" fill="#E1E7FB"/></svg>
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="2" y="2" width="13" height="13" rx="3" fill="#2DD4BF"/><rect x="17" y="2" width="13" height="13" rx="3" fill="#5EEAD4"/><rect x="17" y="17" width="13" height="13" rx="3" fill="#2DD4BF"/><rect x="2" y="17" width="13" height="13" rx="3" fill="#152A2E"/></svg>
       <span>开工先</span><small>反拖延AI工作台</small>
     </div>
     <nav class="tabs" aria-label="主导航">
@@ -186,8 +209,10 @@ main{max-width:1080px;margin:0 auto;padding:22px 16px 60px}
 (function(){
 "use strict";
 /* ===== 数据层 ===== */
-var LS_KEY = "kgx_state_v1";
+var LS_KEY = "kgx_state_v2";
+var SET_KEY = "kgx_ai_v2";
 var state = load();
+var settings = loadSettings();
 function load(){
   try{
     var raw = localStorage.getItem(LS_KEY);
@@ -195,7 +220,15 @@ function load(){
   }catch(e){}
   return {tasks:[], big:"", deadline:"", created:Date.now()};
 }
+function loadSettings(){
+  try{
+    var raw = localStorage.getItem(SET_KEY);
+    if(raw){ var s = JSON.parse(raw); return {apiBase:s.apiBase||"", apiKey:s.apiKey||"", model:s.model||""}; }
+  }catch(e){}
+  return {apiBase:"", apiKey:"", model:""};
+}
 function save(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){} }
+function saveSettings(){ try{ localStorage.setItem(SET_KEY, JSON.stringify(settings)); }catch(e){} }
 function todayStr(){
   var d = new Date();
   return d.getFullYear() + "-" + pad(d.getMonth()+1) + "-" + pad(d.getDate());
@@ -206,7 +239,7 @@ function addDays(s, n){
   d.setDate(d.getDate()+n);
   return d.getFullYear() + "-" + pad(d.getMonth()+1) + "-" + pad(d.getDate());
 }
-function diffDays(a, b){ // b - a 的天数
+function diffDays(a, b){
   var da = new Date(a+"T00:00:00"), db = new Date(b+"T00:00:00");
   return Math.round((db-da)/86400000);
 }
@@ -221,29 +254,14 @@ function dateLabel(s){
 function uid(){ return "t"+Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
 function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
 
-/* ===== 提示词与规则拆解 ===== */
+/* ===== 拆分引擎 ===== */
 var RULES = [
   "1. 每项微任务不超过30分钟，动作具体到能直接动手（如“打开文档”“导出一张表”“发一条消息”）。",
   "2. 每项必须给出三要素：动作｜时长｜验收标准（做到哪一步就算完成，明确“够好”的边界，拒绝完美主义）。",
   "3. 第一项永远是「2分钟开场任务」：最小、无压力、5分钟内可完成，目的是先启动。",
   "4. 从截止日期倒排 deadline，把微任务分到每天，每天最多3个，不要把整座任务山一次性甩出来。",
-  "5. 最后用☐列出“今天只做这2-3步”。"
+  "5. 用☐列出“今天只做这2-3步”。"
 ].join("\n");
-
-function buildPrompt(big, deadline){
-  var t = todayStr();
-  return "你是「开工先」反拖延任务拆分引擎。请把下面这个大任务拆成今天就能开始做的微任务。\n\n"
-    + "【大任务】" + big + "\n"
-    + "【截止日期】" + deadline + "\n"
-    + "【今天日期】" + t + "\n\n"
-    + "拆分规则：\n" + RULES + "\n\n"
-    + "输出格式（严格按此格式，字段用｜分隔，不要输出其他内容）：\n"
-    + "【大任务】……\n"
-    + "【第1步·今天】动作｜时长｜验收标准\n"
-    + "【第2步·今天】动作｜时长｜验收标准\n"
-    + "【第3步·明天】动作｜时长｜验收标准\n"
-    + "【今天只做】☐ 第1步 …\n";
-}
 
 function skeletonTasks(big, deadline){
   var t = todayStr();
@@ -267,8 +285,33 @@ function skeletonTasks(big, deadline){
   return out;
 }
 
-/* ===== 粘贴解析 ===== */
-function parsePasted(text, big, deadline){
+/* ===== AI 直拆 ===== */
+function aiEnabled(){ return settings.apiKey && settings.apiBase; }
+function callAI(big, deadline){
+  var sys = "你是「开工先」反拖延任务拆分引擎。用户会输入一件让他头大的事。请按规则拆成今天就能开始做的微任务。\n规则：\n"
+    + RULES
+    + "\n输出格式（严格按此格式，字段用｜分隔，除【大任务】外不要输出其他内容）：\n"
+    + "【大任务】…\n【第1步·今天】动作｜时长｜验收标准\n【第2步·今天】…\n【第3步·明天】…";
+  var url = settings.apiBase.replace(/\/+$/,"") + "/chat/completions";
+  var payload = {
+    model: settings.model || "gpt-4o-mini",
+    temperature: 0.4,
+    messages: [
+      {role:"system", content:sys},
+      {role:"user", content:"【大任务】"+big+"\n【截止日期】"+deadline+"\n【今天日期】"+todayStr()+"\n请直接输出拆解清单。"}
+    ]
+  };
+  return fetch(url, {
+    method:"POST",
+    headers:{"Content-Type":"application/json","Authorization":"Bearer "+settings.apiKey},
+    body: JSON.stringify(payload)
+  }).then(function(r){ return r.json(); }).then(function(d){
+    var c = d && d.choices && d.choices[0] && d.choices[0].message && d.choices[0].message.content;
+    if(!c) throw new Error((d && d.error && d.error.message) || "空响应");
+    return c;
+  });
+}
+function parseStructured(text, big){
   var t = todayStr();
   var cur = null;
   var out = [];
@@ -301,6 +344,7 @@ function parsePasted(text, big, deadline){
 
 /* ===== 视图渲染 ===== */
 var app = document.getElementById("app");
+var draft = null; // 拆解结果草稿
 function route(){
   var h = location.hash || "#/today";
   var name = h.replace("#/","").split("?")[0];
@@ -324,13 +368,16 @@ function render(name, el){
 
 function vSplit(){
   var t = todayStr();
+  var ai = aiEnabled();
+  var btnLabel = ai ? "AI 直拆" : "直接拆解";
+  var hint = ai ? ("已接入 AI（"+esc(settings.model||"自定义模型")+"）" ) : "未接入 AI：先用内置引擎拆一版，可在下方「接入 AI」让拆解更贴合你的任务";
   return '<div class="card">'
-    + '<h2>把一个让你头大的任务，拆成今天就能做完的一小步</h2>'
-    + '<p class="sub">越模糊的任务越让人拖延。输入大任务，30 秒生成拆分提示词，去豆包工作让 AI 拆，粘贴回来即完成。</p>'
+    + '<h2>把大任务直接拆成今天能做完的一小步</h2>'
+    + '<p class="sub">输入任务和截止日期，工作台直接帮你拆。每一小步都带 deadline 和验收标准，先做 2 分钟就动起来。</p>'
     + '<div class="steps">'
     +   '<span class="st"><b>1</b>输入大任务</span>'
-    +   '<span class="st"><b>2</b>复制提示词给 AI</span>'
-    +   '<span class="st"><b>3</b>回填，今天只做这几步</span>'
+    +   '<span class="st"><b>2</b>直接拆解</span>'
+    +   '<span class="st"><b>3</b>确认后加入工作台</span>'
     + '</div>'
     + '<div class="field"><label for="in-big">大任务（越模糊越好，直接说就行）</label>'
     +   '<textarea id="in-big" class="area" placeholder="例如：Q4 产品复盘报告，一直拖着没动"></textarea>'
@@ -339,26 +386,81 @@ function vSplit(){
     +   '<input id="in-date" class="input" type="date" min="'+t+'" value="'+(state.deadline||addDays(t,3))+'">'
     + '</div>'
     + '<div class="row-actions">'
-    +   '<button class="btn btn-p" id="btn-gen"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L4.5 13.5H11L9.5 22 19 10h-6.5L13 2z"/></svg>生成拆分提示词</button>'
-    +   '<button class="btn btn-g" id="btn-skel">先用示例骨架拆一版</button>'
+    +   '<button class="btn btn-p" id="btn-decompose"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>'+btnLabel+'</button>'
+    +   '<button class="btn btn-o" id="btn-copy-prompt">复制提示词手动精拆</button>'
     + '</div>'
-    + '<div class="field" id="gen-area" style="display:none;margin-top:16px">'
-    +   '<label>提示词已生成（已自动复制，去豆包工作粘贴）</label>'
-    +   '<div class="prompt-box" id="prompt-box"></div>'
-    +   '<div class="row-actions" style="margin-top:10px">'
-    +     '<button class="btn btn-g" id="btn-copy">重新复制</button>'
-    +     '<button class="btn btn-o" id="btn-swap">AI 已回复，粘贴解析</button>'
+    + '<div class="ai-state" id="ai-state">'+hint+'</div>'
+    + '<details class="ai-set" id="ai-set">'
+    +   '<summary>接入 AI（可选）：填你自己的 API，拆解更聪明</summary>'
+    +   '<div class="field" style="margin-top:10px"><label>API 地址（OpenAI 兼容）</label>'
+    +     '<input id="ai-base" class="input" placeholder="https://ark.cn-beijing.volces.com/api/v3" value="'+esc(settings.apiBase)+'">'
     +   '</div>'
-    + '</div>'
-    + '<div class="field" id="paste-area" style="display:none;margin-top:16px">'
-    +   '<label>把 AI 的回复粘贴进来，点解析（自动排期到今天/明天/后天）</label>'
-    +   '<textarea id="in-paste" class="area" placeholder="粘贴 AI 返回的【第1步·今天】…清单"></textarea>'
-    +   '<div class="row-actions" style="margin-top:10px">'
-    +     '<button class="btn btn-p" id="btn-parse">解析并加入工作台</button>'
-    +     '<button class="btn btn-o" id="btn-cancel-paste">取消</button>'
+    +   '<div class="field"><label>API Key</label>'
+    +     '<input id="ai-key" class="input" type="password" placeholder="sk-... 或你的密钥" value="'+esc(settings.apiKey)+'">'
     +   '</div>'
+    +   '<div class="field"><label>模型名</label>'
+    +     '<input id="ai-model" class="input" placeholder="如 doubao-seed-1-6-250615 / gpt-4o-mini / deepseek-chat" value="'+esc(settings.model)+'">'
+    +   '</div>'
+    +   '<div class="row-actions"><button class="btn btn-g" id="btn-save-ai">保存并启用</button>'
+    +     '<button class="btn btn-o" id="btn-clear-ai">清除，只用内置引擎</button></div>'
+    +   '<div class="hint">支持任意 OpenAI 兼容接口（豆包/火山方舟、OpenAI、DeepSeek 等）。Key 只存在你自己的浏览器里，不会上传到别处。</div>'
+    + '</details>'
     + '</div>'
+    + '<div class="card" id="result-card" style="display:none">'
+    +   '<div class="result-head"><div><div class="ttl">拆解结果</div><div class="sub">可逐行修改，确认后一键加入工作台</div></div></div>'
+    +   '<div id="result-list"></div>'
+    +   '<div class="row-actions">'
+    +     '<button class="btn btn-p" id="btn-add-all">一键加入工作台</button>'
+    +     '<button class="btn btn-g" id="btn-regen">再拆一版</button>'
+    +   '</div>'
     + '</div>';
+}
+
+function renderDraft(){
+  var rc = document.getElementById("result-card");
+  if(!rc) return;
+  if(!draft || !draft.length){ rc.style.display="none"; return; }
+  rc.style.display = "block";
+  var html = draft.map(function(it, i){
+    var tag = i===0 ? "2分钟开场 · 先启动" : (dateLabel(it.date)==="今天" ? "今天" : dateLabel(it.date));
+    return '<div class="rrow" data-i="'+i+'">'
+      + '<div class="rstep">'+esc(tag)+'</div>'
+      + '<input class="input r-act" data-i="'+i+'" value="'+esc(it.action)+'" aria-label="动作">'
+      + '<input class="input r-min" data-i="'+i+'" value="'+esc(it.minutes)+'" aria-label="时长">'
+      + '<input class="input acc-in" data-i="'+i+'" value="'+esc(it.accept)+'" aria-label="验收标准">'
+      + '</div>';
+  }).join("");
+  document.getElementById("result-list").innerHTML = html;
+  document.getElementById("result-list").querySelectorAll("input").forEach(function(inp){
+    inp.addEventListener("input", function(){
+      var d = draft[+inp.getAttribute("data-i")];
+      if(inp.classList.contains("r-act")) d.action = inp.value;
+      else if(inp.classList.contains("r-min")) d.minutes = inp.value;
+      else d.accept = inp.value;
+    });
+  });
+}
+
+function decompose(big, deadline){
+  state.big = big; state.deadline = deadline; save();
+  var btn = document.getElementById("btn-decompose");
+  btn.disabled = true; btn.textContent = "拆解中…";
+  var task = aiEnabled()
+    ? callAI(big, deadline).then(function(text){
+        var items = parseStructured(text, big);
+        if(!items.length) throw new Error("AI 返回格式无法解析");
+        return items;
+      }).catch(function(err){
+        toast("AI 调用失败："+err.message+"，已改用内置引擎");
+        return skeletonTasks(big, deadline);
+      })
+    : Promise.resolve(skeletonTasks(big, deadline));
+  task.then(function(items){
+    draft = items;
+    btn.disabled = false; btn.textContent = aiEnabled() ? "AI 直拆" : "直接拆解";
+    renderDraft();
+    document.getElementById("result-card").scrollIntoView({behavior:"smooth", block:"nearest"});
+  });
 }
 
 function vToday(){
@@ -375,7 +477,7 @@ function vToday(){
     + '</div>'
     + '</div>';
   if(today.length===0 && overdue.length===0){
-    html += '<div class="card"><div class="empt"><div class="big">今天还没有任务</div>去「拆任务」输入一件让你头大的事，30 秒拆出今天该做的 2~3 步。<div style="margin-top:16px"><a class="btn btn-p" href="#/split">去拆一个任务</a></div></div></div>';
+    html += '<div class="card"><div class="empt"><div class="big">今天还没有任务</div>去「拆任务」输入一件让你头大的事，工作台直接拆出今天该做的 2~3 步。<div style="margin-top:16px"><a class="btn btn-p" href="#/split">去拆一个任务</a></div></div></div>';
   } else {
     if(today.length){
       html += '<div class="card"><h2>今天只做这几步</h2>' + today.map(taskItem).join("") + '</div>';
@@ -446,7 +548,7 @@ function vTasks(){
 function vAbout(){
   return '<div class="card about">'
     + '<h2>开工先 · 反拖延 AI 工作台</h2>'
-    + '<p>一个专为拖延症职场人打造的 AI 工作台。每天上班先打开它：把一个模糊的大任务交给 AI，它会拆成一串 30 分钟内能完成的微任务，逐项配上倒排的 deadline 和明确的验收标准（“做到 X 就算完成”），并用“先做 2 分钟”的开场动作消除启动阻力。</p>'
+    + '<p>一个专为拖延症职场人打造的 AI 工作台。每天上班先打开它：把一件让你头大的事交给它，直接拆成一串 30 分钟内能完成的微任务，逐项配上倒排的 deadline 和明确的验收标准（“做到 X 就算完成”），并用“先做 2 分钟”的开场动作消除启动阻力。</p>'
     + '<h3>它怎么治拖延</h3>'
     + '<ul>'
     + '<li><b>先做 2 分钟</b>：每次拆解的第一项永远是最小、最无压力的开场动作——人一旦启动，就会惯性做下去。</li>'
@@ -454,10 +556,10 @@ function vAbout(){
     + '<li><b>一天只面对几步</b>：工作台每天只显示当天该做的 2~3 个微任务，不给你看整座任务山。</li>'
     + '<li><b>倒排 deadline</b>：从截止日反推，每天的任务都是外部承诺，做完打勾即交付。</li>'
     + '</ul>'
+    + '<h3>怎么拆</h3>'
+    + '<p>开箱即用：内置拆分引擎离线可跑，输入任务直接出结果。想更聪明：在「拆任务」页接入你自己的 OpenAI 兼容 API（豆包/火山方舟、OpenAI、DeepSeek 等），AI 直拆更贴合你的任务。</p>'
     + '<h3>换人也能用</h3>'
-    + '<p>同一套提示词发给任何同事即可使用；数据可导出/导入，10 分钟配好自己的工作台。</p>'
-    + '<h3>配合豆包工作</h3>'
-    + '<p>拆解用豆包工作完成：本页生成提示词 → 粘贴给豆包工作 → 回复粘贴回来自动排期。也可设置每日定时提醒，早上一打开就是“今天只做这几步”。</p>'
+    + '<p>同一套工作台发给任何同事即可使用；数据可导出/导入，10 分钟配好自己的工作台。</p>'
     + '</div>';
 }
 
@@ -468,7 +570,7 @@ function toast(msg){
   el.textContent = msg;
   el.classList.add("show");
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(function(){ el.classList.remove("show"); }, 2200);
+  toastTimer = setTimeout(function(){ el.classList.remove("show"); }, 2400);
 }
 function copyText(txt){
   if(navigator.clipboard && navigator.clipboard.writeText){
@@ -490,54 +592,67 @@ app.addEventListener("click", function(ev){
   if(!btn) return;
   var id = btn.getAttribute("data-id");
 
-  if(btn.id==="btn-gen"){
+  if(btn.id==="btn-decompose"){
     var big = document.getElementById("in-big").value.trim();
     var dl = document.getElementById("in-date").value;
     if(!big){ toast("先写下大任务，越模糊越好"); return; }
     if(!dl){ toast("先选截止日期"); return; }
-    state.big = big; state.deadline = dl; save();
-    var prompt = buildPrompt(big, dl);
-    document.getElementById("prompt-box").textContent = prompt;
-    document.getElementById("gen-area").style.display = "block";
-    document.getElementById("paste-area").style.display = "none";
-    copyText(prompt).then(function(){ toast("提示词已复制，去豆包工作粘贴"); });
+    decompose(big, dl);
     return;
   }
-  if(btn.id==="btn-copy"){
-    var txt = document.getElementById("prompt-box").textContent;
-    copyText(txt).then(function(){ toast("已重新复制"); });
+  if(btn.id==="btn-copy-prompt"){
+    var big = document.getElementById("in-big").value.trim();
+    var dl = document.getElementById("in-date").value;
+    if(!big || !dl){ toast("先写下大任务和截止日期"); return; }
+    var sys = "你是「开工先」反拖延任务拆分引擎。请把下面这个大任务拆成今天就能开始做的微任务。\n\n"
+      + "【大任务】"+big+"\n【截止日期】"+dl+"\n【今天日期】"+todayStr()+"\n\n"
+      + "拆分规则：\n"+RULES+"\n\n"
+      + "输出格式（严格按此格式，字段用｜分隔）：\n【大任务】…\n【第1步·今天】动作｜时长｜验收标准\n【第2步·今天】…\n【第3步·明天】…\n【今天只做】☐ …";
+    copyText(sys).then(function(){ toast("提示词已复制，去豆包工作粘贴，回复后粘贴回「全部微任务」页导入或用下方解析"); });
     return;
   }
-  if(btn.id==="btn-swap"){
-    document.getElementById("paste-area").style.display = "block";
+  if(btn.id==="btn-save-ai"){
+    settings.apiBase = document.getElementById("ai-base").value.trim();
+    settings.apiKey = document.getElementById("ai-key").value.trim();
+    settings.model = document.getElementById("ai-model").value.trim();
+    saveSettings();
+    var st = document.getElementById("ai-state");
+    if(aiEnabled()){ st.innerHTML = "已接入 AI（"+esc(settings.model||"自定义模型")+"），拆解按钮变为「AI 直拆」"; st.style.color="var(--ok)"; }
+    else { st.innerHTML = "未接入 AI：先用内置引擎拆一版"; st.style.color="var(--mut)"; }
+    toast("已保存");
     return;
   }
-  if(btn.id==="btn-cancel-paste"){
-    document.getElementById("paste-area").style.display = "none";
+  if(btn.id==="btn-clear-ai"){
+    settings.apiBase=""; settings.apiKey=""; settings.model="";
+    saveSettings();
+    document.getElementById("ai-base").value="";
+    document.getElementById("ai-key").value="";
+    document.getElementById("ai-model").value="";
+    document.getElementById("ai-state").innerHTML = "未接入 AI：先用内置引擎拆一版";
+    document.getElementById("ai-state").style.color = "var(--mut)";
+    toast("已清除，只用内置引擎");
     return;
   }
-  if(btn.id==="btn-parse"){
-    var text = document.getElementById("in-paste").value;
-    if(!text.trim()){ toast("先粘贴 AI 的回复"); return; }
-    var items = parsePasted(text, state.big, state.deadline);
-    if(items.length===0){ toast("没解析到任务行，请确认格式"); return; }
-    items.forEach(function(x){ x.id = uid(); state.tasks.push(x); });
+  if(btn.id==="btn-add-all"){
+    if(!draft || !draft.length) return;
+    var n = 0;
+    draft.forEach(function(x){
+      if(!x.action.trim()) return;
+      state.tasks.push({id:uid(), big:state.big, action:x.action.trim(), minutes:x.minutes.trim()||"—", accept:x.accept.trim()||"做完这一步就算完成", date:x.date, done:false, src:x.src});
+      n++;
+    });
     save();
-    toast("已加入 "+items.length+" 个微任务");
-    location.hash = "#/today"; render("today", document.getElementById("view-today"));
+    draft = null; renderDraft();
+    toast("已加入工作台 "+n+" 项");
+    location.hash = "#/today";
+    render("today", document.getElementById("view-today"));
     return;
   }
-  if(btn.id==="btn-skel"){
-    var big2 = document.getElementById("in-big").value.trim();
-    var dl2 = document.getElementById("in-date").value;
-    if(!big2){ toast("先写下大任务"); return; }
-    if(!dl2){ toast("先选截止日期"); return; }
-    state.big = big2; state.deadline = dl2;
-    var items = skeletonTasks(big2, dl2);
-    items.forEach(function(x){ x.id = uid(); state.tasks.push(x); });
-    save();
-    toast("已用示例骨架拆出 "+items.length+" 步（建议再用 AI 精拆替换）");
-    location.hash = "#/today"; render("today", document.getElementById("view-today"));
+  if(btn.id==="btn-regen"){
+    var big = state.big || (document.getElementById("in-big") ? document.getElementById("in-big").value.trim() : "");
+    var dl = state.deadline || (document.getElementById("in-date") ? document.getElementById("in-date").value : "");
+    if(big && dl) decompose(big, dl);
+    else toast("先填写大任务和截止日期");
     return;
   }
   if(btn.id==="btn-add-manual"){
